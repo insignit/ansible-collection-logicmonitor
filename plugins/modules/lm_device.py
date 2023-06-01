@@ -53,6 +53,10 @@ options:
             - ID of the device to target.
             - Required for update, remove, sdt if both display_name and hostname aren't provided.
         type: int
+    id_sdt:
+        description:
+            - ID of the SDT to target.
+            - Required for action=sdt_remove    
     display_name:
         description:
             - The display name of a device (host) in your LogicMonitor account.
@@ -220,6 +224,17 @@ EXAMPLES = r'''
         access_id: "id123"
         access_key: "key123"
         display_name: "127.0.0.1_collector_4"
+# Example of removing a SDT from a device
+- name: Remove SDT Device
+  hosts: localhost
+  tasks:
+    - name: Remove scheduled downtime from LogicMonitor device
+      logicmonitor:
+        action: sdt_remove
+        company: batman
+        access_id: "id123"
+        access_key: "key123"
+        id_std: "H_100"      
 '''
 
 RETURN = r'''
@@ -284,7 +299,8 @@ class Device(LogicMonitorBaseModule):
             self.ADD,
             self.UPDATE,
             self.REMOVE,
-            self.SDT
+            self.SDT,
+            self.SDT_REMOVE
         ]
 
         module_args = dict(
@@ -293,6 +309,8 @@ class Device(LogicMonitorBaseModule):
             access_id=dict(required=True),
             access_key=dict(required=True, no_log=True),
             id=dict(required=False, type="int"),
+            #id_delete=dict(required=False, type="str"),
+            id_sdt=dict(required=False, type="str"),
             display_name=dict(required=False),
             hostname=dict(required=False),
             auto_balance=dict(required=False, type="bool", choices=[True, False]),
@@ -324,6 +342,8 @@ class Device(LogicMonitorBaseModule):
         self.module.debug("Instantiating Device object")
 
         self.id = self.params[self.ModuleFields.ID]
+        #self.id_delete = self.params[self.ModuleFields.ID_DELETE]
+        self.id_sdt= self.params[self.ModuleFields.ID_SDT]
         self.display_name = self.params[self.ModuleFields.DISPLAY_NAME]
         self.hostname = self.params[self.ModuleFields.HOSTNAME]
         self.auto_balance = self.params[self.ModuleFields.AUTO_BALANCE]
@@ -367,6 +387,8 @@ class Device(LogicMonitorBaseModule):
             self.remove()
         elif action == self.SDT:
             self.sdt()
+        elif action == self.SDT_REMOVE:
+            self.sdt_remove()            
         else:
             errmsg = ("Unexpected action \"" + str(self.module.params[self.ModuleFields.ACTION]) + "\" was specified.")
             self.fail(errmsg)
@@ -448,6 +470,27 @@ class Device(LogicMonitorBaseModule):
         self.changed = True
         if self.check_mode:
             self.exit()
+
+    def sdt_remove(self):
+        """ Remove this SDT from monitoring device """
+        self.module.debug("Running Device.remove...")
+
+        # if self.success_response(self.info):
+        #     self.id = self.info[self.ID]
+        # else:
+        #     self.validate_remove_fields()
+        #     self.handle_error_response()
+
+        err_msg = "Failed to delete device " + str(self.id)
+        self.rest_request(self.DELETE, self.SDT_URL + '/' + str(self.id_sdt), err_msg=err_msg)
+
+        self.action_performed = "sdt_remove"
+        self.additional_info = "SDT removed successfully"
+        #self.result = self.get_basic_info()
+        self.module.debug("System changed")
+        self.changed = True
+        if self.check_mode:
+            self.exit()            
 
     def sdt(self):
         """ Schedule down time for this device """
@@ -605,6 +648,7 @@ class Device(LogicMonitorBaseModule):
 
     def get_basic_info(self):
         return {self.ModuleFields.ID: self.info.get(self.ModuleFields.ID),
+                self.ModuleFields.ID_SDT: self.info.get(self.ModuleFields.ID_SDT),
                 self.ModuleFields.HOSTNAME: self.info.get(self.NAME),
                 self.ModuleFields.DISPLAY_NAME: self.info.get(DISPLAY_NAME)}
 

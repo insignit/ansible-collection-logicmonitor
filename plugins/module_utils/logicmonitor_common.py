@@ -84,7 +84,9 @@ class LogicMonitorBaseModule(object):
     ADD = "add"
     UPDATE = "update"
     REMOVE = "remove"
+    SDT_REMOVE = "sdt_remove"
     SDT = "sdt"
+    SDT_DELETE = "sdt_delete"
 
     """REQUEST METHODS"""
     GET = "GET"
@@ -95,6 +97,8 @@ class LogicMonitorBaseModule(object):
 
     """FIELD NAMES"""
     ID = "id"
+    #ID_DELETE = "id_delete"
+    ID_SDT = "id_sdt"
     DESCRIPTION = "description"
     TOTAL = "total"
     ITEMS = "items"
@@ -409,8 +413,10 @@ class LogicMonitorBaseModule(object):
         COMPANY = "company"
         ACCESS_ID = "access_id"
         ACCESS_KEY = "access_key"
-
+        #ID_DELETE = "id_delete"
+        ID_SDT = "id_sdt"
         ID = "id"
+        SDT_ID_DELETE = "sdt_id_delete"
         DESCRIPTION = "description"
         INSTALL_PATH = "install_path"
         INSTALL_USER = "install_user"
@@ -501,6 +507,7 @@ class LogicMonitorBaseModule(object):
         START_DATE_TIME_ON_LOCAL = "startDateTimeOnLocal"
         END_DATE_TIME_ON_LOCAL = "endDateTimeOnLocal"
         SDT_ID = "sdt_id"
+        SDT_ID_DELETE = "id"
 
     class ALERTRULEFields:
         ID = "id"
